@@ -4,22 +4,39 @@
       <h1 id="title">Jogo da Forca</h1>
     </div>
     <div id="game-area">
-      <div class="left-column">
+      <div class="top-section">
         <img :src="require(`@/assets/forca-${hangmanStage}.png`)" alt="Estágio da Forca" />
       </div>
-      <div class="right-column">
-        <div id="word-container">
+      <div class="middle-section">
+        <div class="word-container">
           <WordToGuess :word="wordToGuess" :guessedWord="guessedWord" />
         </div>
-        <div id="button-container">
+      </div>
+      <div class="bottom-section">
+        <div class="button-container">
           <div class="button-row">
-            <AlphabetButtons :disabledLetters="guessedLetters" @guess="makeGuess" :letters="['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']" />
+            <AlphabetButtons
+              :disabledLetters="guessedLetters"
+              @guess="makeGuess"
+              :letters="['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P']"
+              :disabled="gameOver"
+            />
           </div>
           <div class="button-row">
-            <AlphabetButtons :disabledLetters="guessedLetters" @guess="makeGuess" :letters="['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']" />
+            <AlphabetButtons
+              :disabledLetters="guessedLetters"
+              @guess="makeGuess"
+              :letters="['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L']"
+              :disabled="gameOver"
+            />
           </div>
           <div class="button-row">
-            <AlphabetButtons :disabledLetters="guessedLetters" @guess="makeGuess" :letters="['Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']" />
+            <AlphabetButtons
+              :disabledLetters="guessedLetters"
+              @guess="makeGuess"
+              :letters="['Z', 'X', 'C', 'V', 'B', 'N', 'M']"
+              :disabled="gameOver"
+            />
           </div>
         </div>
         <div v-if="gameOver" id="game-over">
@@ -31,7 +48,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
 import WordToGuess from './components/WordToGuess.vue';
@@ -92,105 +108,77 @@ export default {
 </script>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f7f7f7;
-  margin: 0;
-  padding: 0;
-}
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #BFCDEA;
+    margin: 0;
+    padding: 0;
+  }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
+  #header {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
 
-/* Estilos do cabeçalho */
-#header {
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  padding: 20px 0;
-}
+  #title {
+    font-size: 36px;
+    margin: 0;
+    font-family: 'Arial', cursive;
+  }
 
-#title {
-  font-size: 36px;
-  margin: 0;
-}
-
-/* Estilos do conteúdo do jogo */
-#game-area {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-.left-column {
-  flex: 1;
-  max-width: 50%;
-  text-align: center;
-}
-
-.right-column {
-  flex: 1;
-  max-width: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Estilos da imagem da forca */
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Estilos do contêiner da palavra a ser adivinhada */
-#word-container {
-  text-align: center;
-}
-
-/* Estilos dos botões do alfabeto */
-.button-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-button {
-  background-color: #0074D9;
-  color: #fff;
-  padding: 10px 20px;
-  font-size: 16px;
-  margin: 5px;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-/* Estilos da seção de game over */
-#game-over {
-  text-align: center;
-  margin-top: 20px;
-}
-
-#game-over p {
-  font-size: 18px;
-  margin: 10px 0;
-}
-
-/* Estilos gerais para dispositivos menores (responsivo) */
-@media (max-width: 768px) {
   #game-area {
+    display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+    padding: 20px;
   }
 
-  .left-column, .right-column {
+  img {
     max-width: 100%;
+    height: auto;
   }
-}
+
+  .word-container {
+    text-align: center;
+    font-size: 24px; /* Tamanho maior para a palavra a ser adivinhada */
+    font-weight: bold;
+  }
+
+  .button-row button {
+    background-color: #0074D9;
+    color: #fff;
+    padding: 12px 24px;
+    font-size: 20px;
+    margin: 10px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s; /* Adiciona uma transição suave */
+    border-radius: 8px; /* Cantos arredondados */
+  }
+
+  .button-row button:hover {
+    background-color: #0056b3;
+  }
+
+  #game-over {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 28px; /* Tamanho maior para a mensagem de fim de jogo */
+  }
+
+  #game-over button {
+    background-color: #85a0d7; /* Uma cor de destaque para o botão de jogar novamente */
+    padding: 12px 24px;
+    font-size: 20px;
+    border-radius: 8px;
+  }
+
+  #game-over button:hover {
+    background-color: #5d7096;
+  }
 </style>
