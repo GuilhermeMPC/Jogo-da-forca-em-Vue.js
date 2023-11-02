@@ -89,21 +89,28 @@ export default {
       }
     },
     resetGame() {
-      this.wordToGuess = 'VUEJS'; // Defina a palavra para um novo jogo
-      this.guessedLetters = [];
-      this.hangmanStage = 0;
-      this.guessedWord = Array(this.wordToGuess.length).fill('_'); // Reinicialize guessedWord
+      axios.get('http://localhost:3000/palavra-aleatoria')
+      .then(response => {
+        this.wordToGuess = response.data; // Atualiza a palavra do jogo
+        this.guessedLetters = [];
+        this.hangmanStage = 0;
+        this.guessedWord = Array(this.wordToGuess.length).fill('_'); // Reinicialize guessedWord
+      })
+      .catch(error => {
+        console.error('Erro ao buscar a palavra:', error);
+      });
     },
   },
-  created() {
-    // Inicialize a palavra do jogo quando o componente é criado
-    this.wordToGuess = 'TESTE'; // Defina a palavra do jogo aqui
-    this.guessedWord = Array(this.wordToGuess.length).fill('_');
-  },
-  components: {
-    WordToGuess,
-    AlphabetButtons,
-  },
+    created() {
+      axios.get('http://localhost:3000/palavra-aleatoria')
+    .then(response => {
+      this.wordToGuess = response.data; // Atribuir a palavra recebida ao jogo
+      this.guessedWord = Array(this.wordToGuess.length).fill('_');
+    })
+    .catch(error => {
+      console.error('Erro ao buscar a palavra:', error);
+    });
+    },
 };
 </script>
 
