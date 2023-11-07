@@ -1,8 +1,11 @@
 const express = require('express');
+const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
-const db = new sqlite3.Database('meu_banco_de_dados.db');
+const db = new sqlite3.Database('jogo-da-forca.db');
+
+app.use(cors());
 
 app.get('/palavras', (req, res) => {
     db.all('SELECT * FROM palavras', (err, rows) => {

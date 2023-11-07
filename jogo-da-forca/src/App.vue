@@ -52,65 +52,78 @@
 <script>
 import WordToGuess from './components/WordToGuess.vue';
 import AlphabetButtons from './components/AlphabetButtons.vue';
+import axios from 'axios';
 
 export default {
   data() {
     return {
-      wordToGuess: '', // Inicialize com uma string vazia
+      wordToGuess: null,
       guessedLetters: [],
       hangmanStage: 0,
-      guessedWord: [], // Deixe vazio
+      guessedWord: [],
+      wordLoaded: false,
     };
+  },
+  components: {
+    AlphabetButtons,
+    WordToGuess
   },
   computed: {
     gameOver() {
-      return this.playerWon || this.playerLost;
+      return this.wordLoaded && (this.playerWon || this.playerLost);
     },
     playerWon() {
-      return this.guessedWord.join('') === this.wordToGuess;
+      return this.wordLoaded && this.guessedWord.join('') === this.wordToGuess;
     },
     playerLost() {
-      return this.hangmanStage >= 6;
+      return this.wordLoaded && this.hangmanStage >= 6;
     },
   },
   methods: {
     makeGuess(letter) {
+      if (!this.wordLoaded || this.playerWon || this.playerLost) return;
+
       if (!this.guessedLetters.includes(letter)) {
         this.guessedLetters.push(letter);
-        if (this.wordToGuess.includes(letter)) {
-          this.wordToGuess.split('').forEach((char, index) => {
-            if (char === letter) {
-              this.guessedWord[index] = letter; // Atualize diretamente o array
-            }
-          });
+
+        const wordArray = this.wordToGuess.split('');
+        let updatedGuessedWord = this.guessedWord.slice();
+        let letterFound = false;
+
+        wordArray.forEach((char, index) => {
+          if (char === letter) {
+            
+            updatedGuessedWord[index] = letter;
+            letterFound = true;
+          }
+        });
+
+        if (letterFound) {
+          this.guessedWord = updatedGuessedWord;
         } else {
           this.hangmanStage++;
         }
       }
     },
     resetGame() {
+      this.wordLoaded = false;
       axios.get('http://localhost:3000/palavra-aleatoria')
-      .then(response => {
-        this.wordToGuess = response.data; // Atualiza a palavra do jogo
-        this.guessedLetters = [];
-        this.hangmanStage = 0;
-        this.guessedWord = Array(this.wordToGuess.length).fill('_'); // Reinicialize guessedWord
-      })
-      .catch(error => {
-        console.error('Erro ao buscar a palavra:', error);
-      });
+        .then(response => {
+          this.wordToGuess = response.data.toUpperCase();
+          /*console.log(response.data)*/
+          this.guessedLetters = [];
+          this.hangmanStage = 0;
+          this.guessedWord = Array(this.wordToGuess.length).fill('_');
+          this.wordLoaded = true;
+        })
+        .catch(error => {
+          console.error('Erro ao buscar a palavra:', error);
+        });
     },
   },
-    created() {
-      axios.get('http://localhost:3000/palavra-aleatoria')
-    .then(response => {
-      this.wordToGuess = response.data; // Atribuir a palavra recebida ao jogo
-      this.guessedWord = Array(this.wordToGuess.length).fill('_');
-    })
-    .catch(error => {
-      console.error('Erro ao buscar a palavra:', error);
-    });
-    },
+  created() {
+    this.resetGame();
+  },
 };
 </script>
 
