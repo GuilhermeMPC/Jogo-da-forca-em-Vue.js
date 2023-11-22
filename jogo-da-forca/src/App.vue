@@ -7,7 +7,7 @@
       </div>
       <div class="start-section">
         <button @click="startGame" class="start-button">Iniciar Jogo</button>
-        <div class="category-dropdown">
+        <div class="category-dropdown custom-dropdown">
           <p>Categorias:</p>
           <select v-model="selectedCategory" @change="getWordByCategory">
             <option value="">Aleatório</option>
@@ -43,6 +43,7 @@
                 :letters="['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P']"
                 :disabled="gameOver"
               />
+            <br>
             </div>
             <div class="button-row">
               <AlphabetButtons
@@ -51,6 +52,7 @@
                 :letters="['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L']"
                 :disabled="gameOver"
               />
+            <br>
             </div>
             <div class="button-row">
               <AlphabetButtons
@@ -59,21 +61,27 @@
                 :letters="['Z', 'X', 'C', 'V', 'B', 'N', 'M']"
                 :disabled="gameOver"
               />
+            <br>
+            </div>
+            <div class="game-info">
+              <p>Pontuação: {{ score }}</p>
             </div>
           </div>
           <div v-if="gameOver" id="game-over">
             <p v-if="playerWon">Você venceu!</p>
             <p v-else>Você perdeu. A palavra era: {{ wordToGuess }}</p>
             <button @click="resetGame">Jogar novamente</button>
-            <label id='changeCategory' for='resetCategory'>Mudar categoria:</label>
-            <select id='resetCategory' v-model="selectedCategory" @change="getWordByCategory">
-              <option value="">Aleatório</option>
-              <option value="Comidas">Comidas</option>
-              <option value="Profissoes">Profissões</option>
-              <option value="Animais">Animais</option>
-              <option value="Esportes">Esportes</option>
-              <option value="Transportes">Transportes</option>
-            </select>
+            <div class="category-dropdown custom-dropdown">
+              <label id='changeCategory' for='resetCategory'>Mudar categoria:</label>
+              <select id='resetCategory' v-model="selectedCategory" @change="getWordByCategory">
+                <option value="">Aleatório</option>
+                <option value="Comidas">Comidas</option>
+                <option value="Profissoes">Profissões</option>
+                <option value="Animais">Animais</option>
+                <option value="Esportes">Esportes</option>
+                <option value="Transportes">Transportes</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -96,6 +104,7 @@ export default {
       wordLoaded: false,
       gameStarted: false,
       selectedCategory: '',
+      score: 0,
     };
   },
   components: {
@@ -114,57 +123,68 @@ export default {
     },
   },
   methods: {
-  makeGuess(letter) {
-    if (!this.wordLoaded || this.playerWon || this.playerLost) return;
+    makeGuess(letter) {
+      if (!this.wordLoaded || this.playerWon || this.playerLost) return;
 
-    if (!this.guessedLetters.includes(letter)) {
-      this.guessedLetters.push(letter);
+      if (!this.guessedLetters.includes(letter)) {
+        this.guessedLetters.push(letter);
 
-      const wordArray = this.wordToGuess.split('');
-      let updatedGuessedWord = this.guessedWord.slice();
-      let letterFound = false;
+        const wordArray = this.wordToGuess.split('');
+        let updatedGuessedWord = this.guessedWord.slice();
+        let letterFound = false;
 
-      wordArray.forEach((char, index) => {
-        if (char === letter) {
-          updatedGuessedWord[index] = letter;
-          letterFound = true;
+        wordArray.forEach((char, index) => {
+          if (char === letter) {
+            updatedGuessedWord[index] = letter;
+            letterFound = true;
+          }
+        });
+
+        if (letterFound) {
+          this.guessedWord = updatedGuessedWord;
+          this.score += 10;
+        } else {
+          this.hangmanStage++;
         }
-      });
 
-      if (letterFound) {
-        this.guessedWord = updatedGuessedWord;
-      } else {
-        this.hangmanStage++;
+        if (this.playerWon) {
+          this.score *= 2; // Dobra a pontuação ao acertar a palavra inteira
+        }
       }
-    }
+    },
+    resetGame() {
+      if (this.playerLost) {
+        // Zera a pontuação apenas se o jogador perdeu
+        this.score = 0;
+      }
+
+      var url;
+      if (this.selectedCategory === "") {
+        url = 'http://localhost:3000/palavra-aleatoria'
+        console.log(url)
+      } else {
+        url = `http://localhost:3000/palavra-com-categoria?word=${this.selectedCategory}`
+        console.log(url)
+      }
+      this.wordLoaded = false;
+      axios.get(url)
+        .then(response => {
+          this.wordToGuess = response.data.toUpperCase();
+          this.guessedLetters = [];
+          this.hangmanStage = 0;
+          this.guessedWord = Array(this.wordToGuess.length).fill('_');
+          this.wordLoaded = true;
+        })
+        .catch(error => {
+          console.error('Erro ao buscar a palavra:', error);
+        });
+    },
+    startGame() {
+      this.gameStarted = true;
+      this.resetGame();
+    },
   },
-  resetGame() {
-    var url;
-    if (this.selectedCategory === "") {
-      url = 'http://localhost:3000/palavra-aleatoria'
-      console.log(url)
-    } else {
-      url = `http://localhost:3000/palavra-com-categoria?word=${this.selectedCategory}`
-      console.log(url)
-    }
-    this.wordLoaded = false;
-    axios.get(url)
-      .then(response => {
-        this.wordToGuess = response.data.toUpperCase();
-        this.guessedLetters = [];
-        this.hangmanStage = 0;
-        this.guessedWord = Array(this.wordToGuess.length).fill('_');
-        this.wordLoaded = true;
-      })
-      .catch(error => {
-        console.error('Erro ao buscar a palavra:', error);
-      });
-  },
-  startGame() {
-    this.gameStarted = true;
-    this.resetGame();
-  },
-},
+
 
   created() {
       this.resetGame();
@@ -277,8 +297,40 @@ export default {
   }
 
   #changeCategory {
-    font-size: 12px;
+    font-size: 18px;
     margin-left: 20px;
   }
+
+  .custom-dropdown {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 18px;
+  }
+
+  .custom-dropdown select {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 2px solid #fff;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .custom-dropdown select:hover {
+    border-color: #0056b3;
+  }
+
+  .game-info {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 24px;
+  }
+
+  .game-info p {
+    margin: 0;
+  }
+
 
 </style>
